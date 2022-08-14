@@ -8,19 +8,24 @@ use quote::{format_ident, quote, ToTokens};
 use std::collections::BTreeSet;
 use syn::{DeriveInput, Member, Result};
 
-pub fn derive(node: &DeriveInput) -> Result<TokenStream> {
+pub trait BodyExpander {
+    fn expand_struct(input: &Struct) -> TokenStream;
+    fn expand_enum(input: &Enum) -> TokenStream;
+}
+
+pub fn expand<E: BodyExpander>(node: &DeriveInput) -> Result<TokenStream> {
     match Input::from_syn(node)? {
-        Input::Struct(s) => Ok(impl_struct(s)),
-        Input::Enum(e) => Ok(impl_enum(&e)),
+        Input::Struct(s) => Ok(impl_struct::<E>(&s)),
+        Input::Enum(e) => Ok(impl_enum::<E>(&e)),
     }
 }
 
-fn impl_struct(input: Struct) -> TokenStream {
+fn impl_struct<E: BodyExpander>(input: &Struct) -> TokenStream {
     let ty = &input.ident;
     let (impl_generics, ty_generics, _) = input.generics.split_for_impl();
 
     let mut implied_response_bounds = BTreeSet::new();
-    let status_body = match input.attrs.status {
+    let status_body = match &input.attrs.status {
         Some(ResolveStatus::Transparent(_)) => {
             let only_field = &input.fields[0].member;
             implied_response_bounds.insert(0);
@@ -45,19 +50,21 @@ fn impl_struct(input: Struct) -> TokenStream {
         }
     }
     let response_where_clause = inferred_response_bounds.augment_where_clause(input.generics);
+    let error_body = E::expand_struct(&input);
+
     quote! {
         #[allow(unused_qualifications)]
         impl #impl_generics ::actix_web::ResponseError for #ty #ty_generics #response_where_clause {
             #status_body
 
             fn error_response(&self) -> ::actix_web::HttpResponse<::actix_web::body::BoxBody> {
-                ::actix_web::HttpResponseBuilder::new(self.status_code()).json(::actix_web_error::__private::JsonErrorSerialize(&self))
+                #error_body
             }
         }
     }
 }
 
-fn impl_enum(input: &Enum) -> TokenStream {
+fn impl_enum<E: BodyExpander>(input: &Enum) -> TokenStream {
     let ty = &input.ident;
     let (impl_generics, ty_generics, _) = input.generics.split_for_impl();
 
@@ -99,6 +106,7 @@ fn impl_enum(input: &Enum) -> TokenStream {
     };
 
     let where_clause = inferred_bounds.augment_where_clause(input.generics);
+    let error_body = E::expand_enum(&input);
 
     quote! {
         #[allow(unused_qualifications)]
@@ -106,7 +114,7 @@ fn impl_enum(input: &Enum) -> TokenStream {
             #status_body
 
             fn error_response(&self) -> ::actix_web::HttpResponse<::actix_web::body::BoxBody> {
-                ::actix_web::HttpResponseBuilder::new(self.status_code()).json(::actix_web_error::__private::JsonErrorSerialize(&self))
+                #error_body
             }
         }
     }
