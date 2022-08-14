@@ -50,16 +50,14 @@ fn impl_struct<E: BodyExpander>(input: &Struct) -> TokenStream {
         }
     }
     let response_where_clause = inferred_response_bounds.augment_where_clause(input.generics);
-    let error_body = E::expand_struct(&input);
+    let error_expansion = E::expand_struct(&input);
 
     quote! {
         #[allow(unused_qualifications)]
         impl #impl_generics ::actix_web::ResponseError for #ty #ty_generics #response_where_clause {
             #status_body
 
-            fn error_response(&self) -> ::actix_web::HttpResponse<::actix_web::body::BoxBody> {
-                #error_body
-            }
+            #error_expansion
         }
     }
 }
@@ -106,16 +104,14 @@ fn impl_enum<E: BodyExpander>(input: &Enum) -> TokenStream {
     };
 
     let where_clause = inferred_bounds.augment_where_clause(input.generics);
-    let error_body = E::expand_enum(&input);
+    let error_expansion = E::expand_enum(&input);
 
     quote! {
         #[allow(unused_qualifications)]
         impl #impl_generics ::actix_web::ResponseError for #ty #ty_generics #where_clause {
             #status_body
 
-            fn error_response(&self) -> ::actix_web::HttpResponse<::actix_web::body::BoxBody> {
-                #error_body
-            }
+            #error_expansion
         }
     }
 }

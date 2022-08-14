@@ -18,3 +18,11 @@ pub fn derive_json(input: TokenStream) -> TokenStream {
         .unwrap_or_else(|err| err.to_compile_error())
         .into()
 }
+
+#[proc_macro_derive(Text, attributes(status))]
+pub fn derive_text(input: TokenStream) -> TokenStream {
+    let input = parse_macro_input!(input as DeriveInput);
+    expand::<expander::Text>(&input)
+        .unwrap_or_else(|err| err.to_compile_error())
+        .into()
+}
