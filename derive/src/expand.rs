@@ -50,7 +50,7 @@ fn impl_struct<E: BodyExpander>(input: &Struct) -> TokenStream {
         }
     }
     let response_where_clause = inferred_response_bounds.augment_where_clause(input.generics);
-    let error_expansion = E::expand_struct(&input);
+    let error_expansion = E::expand_struct(input);
 
     quote! {
         #[allow(unused_qualifications)]
@@ -104,7 +104,7 @@ fn impl_enum<E: BodyExpander>(input: &Enum) -> TokenStream {
     };
 
     let where_clause = inferred_bounds.augment_where_clause(input.generics);
-    let error_expansion = E::expand_enum(&input);
+    let error_expansion = E::expand_enum(input);
 
     quote! {
         #[allow(unused_qualifications)]
