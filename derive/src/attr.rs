@@ -65,8 +65,10 @@ impl Attrs<'_> {
             ResolveStatus::Fixed(fix) => fix.original.span(),
         })
     }
+}
 
-    fn parse_status_attribute(&mut self, attr: &Attribute) -> Result<()> {
+impl<'a> Attrs<'a> {
+    fn parse_status_attribute(&mut self, attr: &'a Attribute) -> Result<()> {
         if self.status.is_some() {
             return Err(Error::new_spanned(
                 attr,
