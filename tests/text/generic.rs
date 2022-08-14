@@ -34,7 +34,7 @@ enum MyEnum<T: MyTrait> {
 #[test]
 fn structs() {
     expect_response(
-        MyError(MyStruct),
+        &MyError(MyStruct),
         StatusCode::INTERNAL_SERVER_ERROR,
         "Error: my error",
     );
@@ -42,9 +42,9 @@ fn structs() {
 
 #[test]
 fn enums() {
-    expect_response(MyEnum::<MyStruct>::Bad, StatusCode::BAD_REQUEST, "Bad");
+    expect_response(&MyEnum::<MyStruct>::Bad, StatusCode::BAD_REQUEST, "Bad");
     expect_response(
-        MyEnum::Delegate(MyStruct),
+        &MyEnum::Delegate(MyStruct),
         StatusCode::INTERNAL_SERVER_ERROR,
         "Delegate",
     );

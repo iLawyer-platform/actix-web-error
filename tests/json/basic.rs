@@ -40,12 +40,12 @@ fn basic() {
     use http::StatusCode;
 
     expect_response(
-        MyError("xd"),
+        &MyError("xd"),
         StatusCode::BAD_REQUEST,
         r#"{"error":"Error: xd"}"#,
     );
     expect_response(
-        MyError2("xd"),
+        &MyError2("xd"),
         StatusCode::BAD_REQUEST,
         r#"{"error":"Error: xd"}"#,
     );
@@ -56,32 +56,32 @@ fn basic_enum() {
     use http::StatusCode;
 
     expect_response(
-        MyEnum::BadRequest,
+        &MyEnum::BadRequest,
         StatusCode::BAD_REQUEST,
         r#"{"error":"a"}"#,
     );
     expect_response(
-        MyEnum::AnotherBadRequest,
+        &MyEnum::AnotherBadRequest,
         StatusCode::BAD_REQUEST,
         r#"{"error":"b"}"#,
     );
     expect_response(
-        MyEnum::Internal,
+        &MyEnum::Internal,
         StatusCode::INTERNAL_SERVER_ERROR,
         r#"{"error":"c"}"#,
     );
     expect_response(
-        MyEnum2::BadRequest,
+        &MyEnum2::BadRequest,
         StatusCode::BAD_REQUEST,
         r#"{"error":"a"}"#,
     );
     expect_response(
-        MyEnum2::AnotherBadRequest,
+        &MyEnum2::AnotherBadRequest,
         StatusCode::BAD_REQUEST,
         r#"{"error":"b"}"#,
     );
     expect_response(
-        MyEnum2::Internal,
+        &MyEnum2::Internal,
         StatusCode::INTERNAL_SERVER_ERROR,
         r#"{"error":"c"}"#,
     );
