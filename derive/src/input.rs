@@ -1,12 +1,8 @@
-use crate::{
-    attr,
-    attr::{Attrs, ResolveStatus},
-    generics::TypeParams,
-};
+use crate::{attr::Attrs, generics::TypeParams};
 use proc_macro2::Span;
 use syn::{
-    spanned::Spanned, Data, DataEnum, DataStruct, DeriveInput, Error, Fields, Generics, Ident,
-    Index, Member, Result, Type,
+    Data, DataEnum, DataStruct, DeriveInput, Error, Fields, Generics, Ident, Index, Member, Result,
+    Type,
 };
 
 pub enum Input<'a> {
@@ -60,7 +56,7 @@ impl<'a> Input<'a> {
 
 impl<'a> Struct<'a> {
     fn from_syn(node: &'a DeriveInput, data: &'a DataStruct) -> Result<Self> {
-        let attrs = attr::get(&node.attrs)?;
+        let attrs = Attrs::get(&node.attrs)?;
         let scope = TypeParams::new(&node.generics);
         let span = attrs.span().unwrap_or_else(Span::call_site);
         let fields = Field::multiple_from_syn(&data.fields, &scope, span)?;
@@ -76,7 +72,7 @@ impl<'a> Struct<'a> {
 
 impl<'a> Enum<'a> {
     fn from_syn(node: &'a DeriveInput, data: &'a DataEnum) -> Result<Self> {
-        let attrs = attr::get(&node.attrs)?;
+        let attrs = Attrs::get(&node.attrs)?;
         let scope = TypeParams::new(&node.generics);
         let span = attrs.span().unwrap_or_else(Span::call_site);
         let variants = data
@@ -102,7 +98,7 @@ impl<'a> Enum<'a> {
 
 impl<'a> Variant<'a> {
     fn from_syn(node: &'a syn::Variant, scope: &TypeParams<'a>, span: Span) -> Result<Self> {
-        let attrs = attr::get(&node.attrs)?;
+        let attrs = Attrs::get(&node.attrs)?;
         let span = attrs.span().unwrap_or(span);
         Ok(Variant {
             original: node,
@@ -134,7 +130,7 @@ impl<'a> Field<'a> {
     ) -> Result<Self> {
         Ok(Field {
             original: node,
-            attrs: attr::get(&node.attrs)?,
+            attrs: Attrs::get(&node.attrs)?,
             member: node.ident.clone().map_or_else(
                 || {
                     Member::Unnamed(Index {
@@ -146,15 +142,6 @@ impl<'a> Field<'a> {
             ),
             ty: &node.ty,
             contains_generic: scope.intersects(&node.ty),
-        })
-    }
-}
-
-impl Attrs<'_> {
-    pub fn span(&self) -> Option<Span> {
-        self.status.as_ref().map(|st| match st {
-            ResolveStatus::Transparent(t) => t.span(),
-            ResolveStatus::Fixed(fix) => fix.original.span(),
         })
     }
 }
