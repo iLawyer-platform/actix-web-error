@@ -1,7 +1,7 @@
 use crate::{
     attr,
     attr::{Attrs, ResolveStatus},
-    generics::ParamsInScope,
+    generics::TypeParams,
 };
 use proc_macro2::Span;
 use syn::{
@@ -61,7 +61,7 @@ impl<'a> Input<'a> {
 impl<'a> Struct<'a> {
     fn from_syn(node: &'a DeriveInput, data: &'a DataStruct) -> Result<Self> {
         let attrs = attr::get(&node.attrs)?;
-        let scope = ParamsInScope::new(&node.generics);
+        let scope = TypeParams::new(&node.generics);
         let span = attrs.span().unwrap_or_else(Span::call_site);
         let fields = Field::multiple_from_syn(&data.fields, &scope, span)?;
         Ok(Struct {
@@ -77,7 +77,7 @@ impl<'a> Struct<'a> {
 impl<'a> Enum<'a> {
     fn from_syn(node: &'a DeriveInput, data: &'a DataEnum) -> Result<Self> {
         let attrs = attr::get(&node.attrs)?;
-        let scope = ParamsInScope::new(&node.generics);
+        let scope = TypeParams::new(&node.generics);
         let span = attrs.span().unwrap_or_else(Span::call_site);
         let variants = data
             .variants
@@ -101,7 +101,7 @@ impl<'a> Enum<'a> {
 }
 
 impl<'a> Variant<'a> {
-    fn from_syn(node: &'a syn::Variant, scope: &ParamsInScope<'a>, span: Span) -> Result<Self> {
+    fn from_syn(node: &'a syn::Variant, scope: &TypeParams<'a>, span: Span) -> Result<Self> {
         let attrs = attr::get(&node.attrs)?;
         let span = attrs.span().unwrap_or(span);
         Ok(Variant {
@@ -116,7 +116,7 @@ impl<'a> Variant<'a> {
 impl<'a> Field<'a> {
     fn multiple_from_syn(
         fields: &'a Fields,
-        scope: &ParamsInScope<'a>,
+        scope: &TypeParams<'a>,
         span: Span,
     ) -> Result<Vec<Self>> {
         fields
@@ -129,7 +129,7 @@ impl<'a> Field<'a> {
     fn from_syn(
         i: usize,
         node: &'a syn::Field,
-        scope: &ParamsInScope<'a>,
+        scope: &TypeParams<'a>,
         span: Span,
     ) -> Result<Self> {
         Ok(Field {
