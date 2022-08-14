@@ -1,8 +1,12 @@
 //! Error responses for actix-web made easy.
-//! This crate will make it easy implementing [`actix_web::ResponseError`] for errors.
+//! <!-- We don't depend on `actix_web` -->
+//! This crate will make it easy implementing [`actix_web::ResponseError`](https://docs.rs/actix-web/latest/actix_web/trait.ResponseError.html) for errors.
 //! It's best used in combination with [thiserror](https://docs.rs/thiserror).
 //!
-//! Currently, only the [`Json`] error is supported.
+//! # Error Responses
+//!
+//! * [`Json`] will respond with JSON in the form of `{ "error": <`[`Display`](std::fmt::Display)` representation> }` (`application/json`).
+//! * [`Text`] will respond with the [`Display`](std::fmt::Display) representation of the error (`text/plain`).
 //!
 //! # Example
 //!

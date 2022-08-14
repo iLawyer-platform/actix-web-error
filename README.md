@@ -10,6 +10,11 @@ Currently, only a JSON response is supported.
 Thanks to the aforementioned [thiserror](https://github.com/dtolnay/thiserror) project, 
 I used the core structure and core utilities. 
 
+## Error Responses
+
+* `Json` will respond with JSON in the form of `{ "error": <Display representation> }` (`application/json`).
+* `Text` will respond with the `Display` representation of the error (`text/plain`).
+
 ## Example
 
 ```rust
