@@ -22,6 +22,11 @@
 //!     #[status(500)] // specific override
 //!     Internal,
 //! }
+//!
+//! #[derive(Debug, thiserror::Error, actix_web_error::Text)]
+//! #[error("Item not found")]
+//! #[status(404)]
+//! struct MyOtherError;
 //! # fn main() {}
 //! ```
 //!

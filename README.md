@@ -29,6 +29,11 @@ enum MyError {
     #[status(500)] // specific override
     Internal,
 }
+
+#[derive(Debug, thiserror::Error, actix_web_error::Text)]
+#[error("Item not found")]
+#[status(404)]
+struct MyOtherError;
 ```
 
 This will roughly expand to:
@@ -46,10 +51,14 @@ enum MyError {
     Internal,
 }
 
+#[derive(Debug, thiserror::Error)]
+#[error("Item not found")]
+struct MyOtherError;
+
 impl ResponseError for MyError {
     fn status_code(&self) -> StatusCode {
         match self {
-            Self::Internal => StatusCode::INTERNAL_SERVER_ERROR,
+            Self::Internal => StatusCode::from_u16(500).unwrap(),
             _ => StatusCode::BAD_REQUEST,
         }
     }
@@ -57,6 +66,14 @@ impl ResponseError for MyError {
     fn error_response(&self) -> HttpResponse {
         HttpResponseBuilder::new(self.status_code())
             .json(serde_json::json!({"error": self.to_string() }))
+    }
+}
+
+impl ResponseError for MyOtherError {
+    fn status_code(&self) -> StatusCode {
+        // With at least opt-level=1, this unwrap will be removed,
+        // so this function will essentially return a constant.
+        StatusCode::from_u16(404).unwrap()
     }
 }
 ```
