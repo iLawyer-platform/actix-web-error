@@ -2,31 +2,30 @@ use proc_macro2::{Span, TokenStream};
 use quote::{quote, ToTokens};
 use syn::{parse::ParseStream, spanned::Spanned, Attribute, Error, Ident, LitInt, Result};
 
-#[derive(Debug)]
 pub struct Attrs<'a> {
     pub status: Option<ResolveStatus<'a>>,
     pub error_code: Option<ErrorCode<'a>>,
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone)]
 pub enum ResolveStatus<'a> {
     Transparent(&'a Attribute),
     Fixed(Status<'a>),
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone)]
 pub struct Status<'a> {
     pub original: &'a Attribute,
     pub code: StatusCode,
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone)]
 pub enum StatusCode {
     Value(http::StatusCode),
     Name(Ident),
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone)]
 pub struct ErrorCode<'a> {
     pub original: &'a Attribute,
     pub error_code: String,
