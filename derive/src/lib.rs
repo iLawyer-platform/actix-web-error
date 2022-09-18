@@ -11,7 +11,7 @@ use expand::expand;
 use proc_macro::TokenStream;
 use syn::{parse_macro_input, DeriveInput};
 
-#[proc_macro_derive(Json, attributes(status))]
+#[proc_macro_derive(Json, attributes(status, error_code))]
 pub fn derive_json(input: TokenStream) -> TokenStream {
     let input = parse_macro_input!(input as DeriveInput);
     expand::<expander::Json>(&input)

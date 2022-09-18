@@ -40,8 +40,10 @@ pub mod __private {
     use serde::{ser::SerializeStruct, Serialize, Serializer};
     use std::fmt::Display;
 
-    #[repr(transparent)]
-    pub struct JsonErrorSerialize<'a, T>(pub &'a T);
+    pub struct JsonErrorSerialize<'a, T> {
+        pub error: &'a T,
+        pub error_code: Option<&'a str>,
+    }
 
     impl<'a, T> Serialize for JsonErrorSerialize<'a, T>
     where
@@ -51,9 +53,19 @@ pub mod __private {
         where
             S: Serializer,
         {
-            let mut ser = serializer.serialize_struct("_", 1)?;
-            ser.serialize_field("error", &self.0.to_string())?;
-            ser.end()
+            match self.error_code {
+                Some(error_code) => {
+                    let mut ser = serializer.serialize_struct("_", 2)?;
+                    ser.serialize_field("error", &self.error.to_string())?;
+                    ser.serialize_field("error_code", &error_code.to_string())?;
+                    ser.end()
+                }
+                None => {
+                    let mut ser = serializer.serialize_struct("_", 2)?;
+                    ser.serialize_field("error", &self.error.to_string())?;
+                    ser.end()
+                }
+            }
         }
     }
 }

@@ -105,6 +105,7 @@ fn impl_enum<E: BodyExpander>(input: &Enum) -> TokenStream {
 
     let where_clause = inferred_bounds.augment_where_clause(input.generics);
     let error_expansion = E::expand_enum(input);
+    let error_code_expansion = error_code(input);
 
     quote! {
         #[allow(unused_qualifications)]
@@ -112,6 +113,10 @@ fn impl_enum<E: BodyExpander>(input: &Enum) -> TokenStream {
             #status_body
 
             #error_expansion
+        }
+
+        impl #ty #ty_generics #where_clause {
+            #error_code_expansion
         }
     }
 }
@@ -128,5 +133,31 @@ fn fields_pat(fields: &[Field]) -> TokenStream {
             quote!((#(#vars),*))
         }
         None => quote!({}),
+    }
+}
+
+fn error_code(input: &Enum) -> TokenStream {
+    let ty = &input.ident;
+
+    let arms = input.variants.iter().map(|v| {
+        let error_code = match v.attrs.error_code.clone() {
+            Some(error_code) => {
+                let string = error_code.error_code;
+                quote! { Some(#string) }
+            }
+            None => quote! { None },
+        };
+        let ident = &v.ident;
+        let pat = fields_pat(&v.fields);
+        quote! { #ty::#ident #pat => #error_code }
+    });
+    let arms: Vec<_> = arms.collect();
+
+    quote! {
+        fn error_code(&self) -> Option<&'static str> {
+            match self {
+                #(#arms,)*
+            }
+        }
     }
 }
