@@ -20,7 +20,7 @@ impl BodyExpander for Json {
 fn json_expand_enum() -> TokenStream {
     quote! {
         fn error_response(&self) -> ::actix_web::HttpResponse<::actix_web::body::BoxBody> {
-            ::actix_web::HttpResponseBuilder::new(self.status_code()).json(::actix_web_error::__private::JsonErrorSerialize { error: &self, error_code: self.error_code() } )
+            ::actix_web::HttpResponseBuilder::new(self.status_code()).json(::actix_web_error::__private::JsonErrorSerialize { message: &self, code: self.error_code() } )
         }
     }
 }
@@ -28,7 +28,7 @@ fn json_expand_enum() -> TokenStream {
 fn json_expand() -> TokenStream {
     quote! {
         fn error_response(&self) -> ::actix_web::HttpResponse<::actix_web::body::BoxBody> {
-            ::actix_web::HttpResponseBuilder::new(self.status_code()).json(::actix_web_error::__private::JsonErrorSerialize(&self))
+            ::actix_web::HttpResponseBuilder::new(self.status_code()).json(::actix_web_error::__private::JsonErrorSerialize { message: &self })
         }
     }
 }

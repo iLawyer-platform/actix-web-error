@@ -41,8 +41,8 @@ pub mod __private {
     use std::fmt::Display;
 
     pub struct JsonErrorSerialize<'a, T> {
-        pub error: &'a T,
-        pub error_code: Option<&'a str>,
+        pub message: &'a T,
+        pub code: Option<&'a str>,
     }
 
     impl<'a, T> Serialize for JsonErrorSerialize<'a, T>
@@ -53,16 +53,16 @@ pub mod __private {
         where
             S: Serializer,
         {
-            match self.error_code {
+            match self.code {
                 Some(error_code) => {
                     let mut ser = serializer.serialize_struct("_", 2)?;
-                    ser.serialize_field("error", &self.error.to_string())?;
-                    ser.serialize_field("error_code", &error_code.to_string())?;
+                    ser.serialize_field("message", &self.message.to_string())?;
+                    ser.serialize_field("code", &error_code.to_string())?;
                     ser.end()
                 }
                 None => {
                     let mut ser = serializer.serialize_struct("_", 2)?;
-                    ser.serialize_field("error", &self.error.to_string())?;
+                    ser.serialize_field("message", &self.message.to_string())?;
                     ser.end()
                 }
             }
