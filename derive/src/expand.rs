@@ -141,10 +141,7 @@ fn error_code(input: &Enum) -> TokenStream {
 
     let arms = input.variants.iter().map(|v| {
         let error_code = match v.attrs.error_code.clone() {
-            Some(error_code) => {
-                let string = error_code.error_code;
-                quote! { Some(#string) }
-            }
+            Some(error_code) => error_code.error_code.tokens(),
             None => quote! { None },
         };
         let ident = &v.ident;

@@ -1,6 +1,6 @@
-use proc_macro2::{Span, TokenStream};
+use proc_macro2::{Group, Span, TokenStream};
 use quote::{quote, ToTokens};
-use syn::{parse::ParseStream, spanned::Spanned, Attribute, Error, Ident, LitInt, Result};
+use syn::{parse::ParseStream, spanned::Spanned, Attribute, Error, Ident, LitInt, LitStr, Result};
 
 pub struct Attrs<'a> {
     pub status: Option<ResolveStatus<'a>>,
@@ -28,7 +28,13 @@ pub enum StatusCode {
 #[derive(Clone)]
 pub struct ErrorCode<'a> {
     pub original: &'a Attribute,
-    pub error_code: String,
+    pub error_code: Code,
+}
+
+#[derive(Clone)]
+pub enum Code {
+    String(String),
+    Name(Group),
 }
 
 mod kw {
@@ -135,7 +141,20 @@ fn parse_status_expr(input: ParseStream) -> Result<StatusCode> {
     }
 }
 
-fn parse_error_code_expr(input: ParseStream) -> Result<String> {
-    let ident = input.parse::<Ident>()?;
-    Ok(ident.to_string())
+fn parse_error_code_expr(input: ParseStream) -> Result<Code> {
+    if let Ok(string) = input.parse::<LitStr>() {
+        Ok(Code::String(string.value()))
+    } else {
+        let ident = input.parse::<Group>()?;
+        Ok(Code::Name(ident))
+    }
+}
+
+impl Code {
+    pub fn tokens(&self) -> TokenStream {
+        match self {
+            Code::String(string) => quote! { Some(#string) },
+            Code::Name(ident) => quote! { #ident },
+        }
+    }
 }
